@@ -1,0 +1,13 @@
+production: &production
+  adapter: postgresql
+  encoding: unicode
+  database: im_template_prod
+  pool: 10
+  username: im
+  password: password
+development:
+  <<: *production
+  database: im_template_dev
+test:
+  <<: *production
+  database: im_template_test

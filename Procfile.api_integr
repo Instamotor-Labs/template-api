@@ -1,0 +1,5 @@
+# Read more about sidekiq timeout here:
+# https://intercityup.com/blog/allowing-long-running-sidekiq-jobs-finish-deploying.html
+
+api: bundle exec unicorn -p $PORT -c ./config/unicorn.rb --no-default-middleware
+sidekiq: bundle exec sidekiq -q calls -q alerts -q cache -q dev_tools --timeout 400 --concurrency 1

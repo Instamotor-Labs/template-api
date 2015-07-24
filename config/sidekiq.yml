@@ -1,0 +1,13 @@
+---
+:development:
+  :url: redis://localhost:6379
+  :queues:
+    - calls
+    - alerts
+    - cache
+:test:
+  :url: redis://localhost:6379
+:integration:
+  :url: redis://example.0001.use1.cache.amazonaws.com:6379
+:production:
+  :url: redis://example.0001.use1.cache.amazonaws.com:6379

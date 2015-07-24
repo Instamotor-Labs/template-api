@@ -1,0 +1,28 @@
+start on starting <%= app %>-<%= name %>
+stop on stopping <%= app %>-<%= name %>
+respawn
+
+<% if name =~ /sidekiq/ %>
+
+  # We need to give some time to sidekick to shut down, as it may process some jobs
+  # find out more about this:
+  # @see http://upstart.ubuntu.com/cookbook/#kill-timeout
+  # @see https://intercityup.com/blog/allowing-long-running-sidekiq-jobs-finish-deploying.html
+  # NOTE: It's better that this timeout be greater than one used in config/sidekiq.yml
+
+  # TODO: This should be ENV var
+  # TODO: What if name change?
+
+  kill timeout 420
+<% end %>
+
+env PORT=<%= port %>
+<% engine.env.each do |name, value| -%>
+  env <%= name.upcase %>='<%= value.gsub(/'/, "'\"'\"'") %>'
+<% end -%>
+
+setuid <%= user %>
+
+chdir <%= engine.root %>
+
+exec <%= process.command %>

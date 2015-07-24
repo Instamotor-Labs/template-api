@@ -1,0 +1,9 @@
+# NOTE: sidekiq-cron does not support "every" syntax "cron" must be set instead
+
+#schedule_send_buyer_weekend_digests:
+#  cron: "0 22 * * 4"
+#  class: "ScheduleSendBuyerWeekendDigestsJob"
+
+#schedule_send_buyer_digests:
+#  cron: "0 22 * * 1"
+#  class: "ScheduleSendBuyerDigestsJob"

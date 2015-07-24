@@ -1,0 +1,102 @@
+<% stage = fetch(:stage) %>
+<% domain = fetch(:domain) %>
+
+upstream <%= "unicorn_#{stage}" %> {
+  server unix:<%= "#{shared_path}/sockets/unicorn.sock fail_timeout=0;" %>
+}
+
+## our http server at port 80
+server {
+  listen      80;
+  server_name _ <%= domain %>;
+  client_max_body_size 20M;
+  ## redirect http to https ##
+  # rewrite        ^ https://$server_name$request_uri? permanent;
+
+  underscores_in_headers on;
+
+  charset utf-8;
+
+  rewrite  ^\/status(.*)$  $1 last;
+
+  gzip  on;
+  gzip_disable     "MSIE [1-6]\.(?!.*SV1)";
+  gzip_types       text/plain application/xml text/xml text/css application/x-javascript application/xml+rss text/javascript application/json;
+
+  gzip_vary on;
+
+  access_log  <%= "#{shared_path}/log/#{domain}_nginx_access.log" %>;
+  error_log   <%= "#{shared_path}/log/#{domain}_nginx_error.log" %>;
+  root        <%= "#{current_path}/public" %>;
+
+  location / {
+      proxy_set_header  X_FORWARDED_PROTO https;
+      proxy_set_header  X-Real-IP  $remote_addr;
+      proxy_set_header  X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header  Host $http_host;
+      proxy_redirect    off;
+
+      if (-f $request_filename/index.html) {
+        rewrite (.*) $1/index.html break;
+      }
+      if (-f $request_filename.html) {
+        rewrite (.*) $1.html break;
+      }
+      if (!-f $request_filename) {
+        proxy_pass <%= "http://unicorn_#{stage}" %>;
+        break;
+      }
+  }
+
+  error_page    404              /404.html;
+  error_page    500 502 503 504  /500.html;
+}
+
+server {
+
+  server_name <%= domain %>;
+  client_max_body_size 20M;
+  listen 443;
+  ssl on;
+  ssl_certificate     <%= "#{current_path}/config/deploy/ssl/ssl.crt" %>;
+  ssl_certificate_key <%= "#{current_path}/config/deploy/ssl/ssl.key" %>;
+
+  underscores_in_headers on;
+
+  charset utf-8;
+
+  rewrite  ^\/status(.*)$  $1 last;
+
+  gzip  on;
+  gzip_disable     "MSIE [1-6]\.(?!.*SV1)";
+  gzip_types       text/plain application/xml text/xml text/css application/x-javascript application/xml+rss text/javascript application/json;
+
+  gzip_vary on;
+
+  access_log  <%= "#{shared_path}/log/#{domain}_nginx_access.log" %>;
+  error_log   <%= "#{shared_path}/log/#{domain}_nginx_error.log" %>;
+  root        <%= "#{current_path}/public" %>;
+
+  location / {
+      proxy_set_header  X_FORWARDED_PROTO https;
+      proxy_set_header  X-Real-IP  $remote_addr;
+      proxy_set_header  X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header  Host $http_host;
+      proxy_redirect    off;
+
+      if (-f $request_filename/index.html) {
+        rewrite (.*) $1/index.html break;
+      }
+      if (-f $request_filename.html) {
+        rewrite (.*) $1.html break;
+      }
+      if (!-f $request_filename) {
+        proxy_pass <%= "http://unicorn_#{stage}" %>;
+        break;
+      }
+  }
+
+  error_page    404              /404.html;
+  error_page    500 502 503 504  /500.html;
+
+}

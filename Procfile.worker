@@ -1,0 +1,6 @@
+# Read more about sidekiq timeout here:
+# https://intercityup.com/blog/allowing-long-running-sidekiq-jobs-finish-deploying.html
+# TODO: Tune up concurrency? CPU (v)cores num?
+# More on queues weight @see https://github.com/mperham/sidekiq/wiki/Advanced-Options
+
+sidekiq: bundle exec sidekiq -q calls,2 -q alerts -q cache --timeout 400 --concurrency 16
